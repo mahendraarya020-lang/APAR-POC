@@ -1,0 +1,8 @@
+@model List<Inspection>
+@{ ViewData["Title"] = "Dashboard"; }
+<div class="page-heading"><div><p class="eyebrow">RINGKASAN OPERASIONAL</p><h1>Dashboard</h1><p>Pantau kesiapan peralatan dan hasil inspeksi terbaru.</p></div><a class="btn btn-accent" asp-controller="Equipment" asp-action="Index">Lihat peralatan</a></div>
+<div class="stats-grid"><div class="stat-card"><span>Peralatan dalam akses</span><strong>@ViewBag.EquipmentCount</strong><small>unit terdaftar</small></div><div class="stat-card"><span>Inspeksi terkirim</span><strong>@ViewBag.InspectionCount</strong><small>hasil pemeriksaan</small></div><div class="stat-card highlight"><span>Temuan terbuka</span><strong>@ViewBag.OpenFindings</strong><small>perlu tindak lanjut</small></div></div>
+<section class="surface"><div class="section-heading"><div><h2>Inspeksi terbaru</h2><p>Hasil terakhir dalam gedung yang dapat Anda akses.</p></div><a asp-controller="Inspections" asp-action="Index">Lihat semua →</a></div>
+    @if (Model.Count == 0) { <p class="empty-inline">Belum ada inspeksi. Pilih peralatan untuk memulai.</p> }
+    else { <div class="table-responsive"><table class="table app-table"><thead><tr><th>Waktu (UTC)</th><th>Peralatan</th><th>Gedung</th><th>Petugas</th><th></th></tr></thead><tbody>@foreach (var x in Model) { <tr><td>@x.SubmittedAt.ToString("dd MMM yyyy HH:mm")</td><td><strong>@x.Equipment.Name</strong><small>@x.Equipment.Code</small></td><td>@x.Equipment.Building.Name</td><td>@x.Inspector.DisplayName</td><td><a asp-controller="Inspections" asp-action="Details" asp-route-id="@x.Id">Detail</a></td></tr> }</tbody></table></div> }
+</section>

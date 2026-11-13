@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: rescue_checklist
+      POSTGRES_USER: rescue
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - rescue_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rescue -d rescue_checklist"]
+      interval: 3s
+      retries: 20
+volumes:
+  rescue_pgdata:

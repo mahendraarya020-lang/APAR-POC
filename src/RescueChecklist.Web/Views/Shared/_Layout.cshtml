@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#172a3a" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/lib/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <title>@(ViewData["Title"] ?? "Rescue Checklist") · Rescue Checklist</title>
+</head>
+<body data-user="@(User.Identity?.IsAuthenticated == true ? User.Identity.Name : "")">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <header class="site-header">
+            <div class="container-xl header-inner">
+                <a class="brand" asp-controller="Home" asp-action="Index"><span class="brand-mark" aria-hidden="true">R</span><span>RESCUE<span class="brand-light">CHECKLIST</span></span></a>
+                <nav class="main-nav" aria-label="Navigasi utama">
+                    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+                    <a asp-controller="Equipment" asp-action="Index">Peralatan</a>
+                    <a asp-controller="Inspections" asp-action="Index">Riwayat</a>
+                    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.PICBuilding)) { <a asp-controller="FollowUps" asp-action="Index">Tindak lanjut</a> }
+                    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.PICBuilding) || User.IsInRole(Roles.Management)) { <a asp-controller="Reports" asp-action="Index">Laporan</a> }
+                    @if (User.IsInRole(Roles.Admin)) { <a asp-controller="Admin" asp-action="Index">Administrasi</a> }
+                </nav>
+                <div class="account-area"><span class="account-name">@User.Identity.Name</span><form asp-controller="Account" asp-action="Logout" method="post" id="logout-form"><button type="button" class="logout-button" id="logout-button">Keluar</button></form></div>
+            </div>
+        </header>
+    }
+    <main class="container-xl main-content">
+        @if (TempData["Success"] is string success) { <div class="alert alert-success" role="status">@success</div> }
+        @if (TempData["Error"] is string error) { <div class="alert alert-danger" role="alert">@error</div> }
+        @RenderBody()
+    </main>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="sync-bar" role="status" aria-live="polite"><div class="container-xl sync-inner"><span id="connection-status">Memeriksa koneksi…</span><span id="draft-count">0 draf tertunda</span><button type="button" id="sync-now" class="btn btn-sm btn-outline-light">Sinkronkan sekarang</button></div></div>
+        <form id="csrf-form" hidden>@Html.AntiForgeryToken()</form>
+    }
+    <script src="/js/site.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

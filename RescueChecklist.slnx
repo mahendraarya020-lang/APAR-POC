@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/RescueChecklist.Web/RescueChecklist.Web.csproj" />
+  <Project Path="tests/RescueChecklist.Tests/RescueChecklist.Tests.csproj" />
+</Solution>

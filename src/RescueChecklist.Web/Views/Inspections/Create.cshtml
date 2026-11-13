@@ -1,0 +1,11 @@
+@model Equipment
+@{ ViewData["Title"] = "Inspeksi baru"; var template = (ChecklistTemplate)ViewBag.Template; }
+<div class="page-heading"><div><p class="eyebrow">INSPEKSI BARU · @Model.Code</p><h1>@Model.Name</h1><p>@Model.Building.Name · @template.Name v@(template.Version)</p></div><a asp-controller="Equipment" asp-action="Index" class="btn btn-outline-dark">Kembali</a></div>
+<form id="inspection-form" method="post" action="/Inspections" class="inspection-form" data-equipment="@Model.Id">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="ClientSubmissionId" value="@Guid.NewGuid()" /><input type="hidden" name="EquipmentId" value="@Model.Id" /><input type="hidden" name="ChecklistTemplateId" value="@template.Id" /><input type="hidden" name="TemplateVersion" value="@template.Version" /><input type="hidden" name="StartedAt" value="@DateTime.UtcNow.ToString("O")" />
+    <div class="form-intro"><strong>Isi semua butir wajib</strong><span>Pilih kondisi setiap butir. Catatan wajib jika ada temuan.</span></div>
+    @{ var n = 0; }
+    @foreach (var item in template.Items.OrderBy(x => x.Order)) { <fieldset class="checklist-item"><legend><span class="question-number">@item.Order.ToString("00")</span>@item.Question</legend><input type="hidden" name="Answers[@n].ChecklistItemId" value="@item.Id" /><div class="choice-row"><label><input type="radio" name="Answers[@n].Result" value="Baik" required /><span>Baik</span></label><label><input type="radio" name="Answers[@n].Result" value="PerluTindakan" required /><span>Perlu tindakan</span></label><label><input type="radio" name="Answers[@n].Result" value="TidakBerlaku" required /><span>Tidak berlaku</span></label></div><label class="form-label mt-3" for="note-@n">Catatan <small>(wajib untuk Perlu tindakan)</small></label><textarea class="form-control" id="note-@n" name="Answers[@n].Note" rows="2" maxlength="1000"></textarea></fieldset> n++; }
+    <div class="form-actions"><span id="draft-message" role="status" aria-live="polite"></span><button type="button" id="save-draft" class="btn btn-outline-dark">Simpan draf</button><button type="submit" class="btn btn-accent">Kirim inspeksi</button></div>
+</form>

@@ -1,0 +1,13 @@
+@{ ViewData["Title"] = "Masuk"; }
+<div class="login-shell">
+    <div class="login-intro"><div class="login-emblem">R</div><p class="eyebrow">OPERASIONAL RESCUE</p><h1>Pemeriksaan peralatan, tercatat dengan jelas.</h1><p>Isi checklist di lapangan, simpan draf saat jaringan terputus, dan pantau tindak lanjut dalam satu tempat.</p></div>
+    <div class="login-card"><p class="eyebrow">AKSES APLIKASI</p><h2>Masuk ke akun Anda</h2><p class="text-muted mb-4">Gunakan akun internal yang diberikan admin.</p>
+        <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
+        <form method="post" asp-action="Login" autocomplete="on">
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+            <label class="form-label" for="userName">Nama pengguna</label><input class="form-control mb-3" id="userName" name="userName" autocomplete="username" required autofocus />
+            <label class="form-label" for="password">Kata sandi</label><input class="form-control mb-3" type="password" id="password" name="password" autocomplete="current-password" required />
+            <button class="btn btn-accent w-100" type="submit">Masuk</button>
+        </form><p class="connection-hint mt-4" id="connection-status">Memeriksa koneksi…</p>
+    </div>
+</div>
