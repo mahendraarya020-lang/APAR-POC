@@ -1,0 +1,47 @@
+name: Generate APAR PostgreSQL Migration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-sql:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install EF Core CLI
+        run: dotnet tool install --global dotnet-ef --version '10.0.15'
+
+      - name: Restore application project
+        run: dotnet restore src/RescueChecklist.Web/RescueChecklist.Web.csproj
+
+      - name: Generate idempotent PostgreSQL migration SQL
+        run: |
+          dotnet ef migrations script \
+            --idempotent \
+            --project src/RescueChecklist.Web/RescueChecklist.Web.csproj \
+            --startup-project src/RescueChecklist.Web/RescueChecklist.Web.csproj \
+            --configuration Release \
+            --output "${{ runner.temp }}/apar_migration.sql"
+
+      - name: Validate generated migration SQL
+        run: |
+          test -s "${{ runner.temp }}/apar_migration.sql"
+          grep -q '20261113093703_InitialPostgres' "${{ runner.temp }}/apar_migration.sql"
+          grep -q 'AspNetUsers' "${{ runner.temp }}/apar_migration.sql"
+
+      - name: Upload SQL artifact (no database changes)
+        uses: actions/upload-artifact@v4
+        with:
+          name: apar-postgresql-migration
+          path: ${{ runner.temp }}/apar_migration.sql
+          retention-days: 7
