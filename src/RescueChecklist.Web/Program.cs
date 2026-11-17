@@ -26,8 +26,14 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.Events.OnValidatePrincipal = async context =>
     {
         if (originalValidator != null) await originalValidator(context);
+
+        // ASP.NET Core Identity can reject the principal during security stamp validation.
+        // Do not query the user store when the principal has already been cleared.
+        if (context.Principal == null)
+            return;
+
         var manager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
-        var user = await manager.GetUserAsync(context.Principal!);
+        var user = await manager.GetUserAsync(context.Principal);
         if (user?.IsActive != true)
         {
             context.RejectPrincipal();
