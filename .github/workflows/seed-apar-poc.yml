@@ -1,0 +1,47 @@
+name: Build One-Time APAR POC Seeder
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/Apar.Seeder/**'
+      - '.github/workflows/seed-apar-poc.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-seeder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish Linux x64 seeder (no database connection)
+        run: |
+          dotnet publish tools/Apar.Seeder/Apar.Seeder.csproj \
+            --configuration Release \
+            --runtime linux-x64 \
+            --self-contained false \
+            -p:UseAppHost=false \
+            --output "${{ runner.temp }}/apar-seeder"
+
+      - name: Verify published files
+        run: |
+          test -s "${{ runner.temp }}/apar-seeder/Apar.Seeder.dll"
+          test -s "${{ runner.temp }}/apar-seeder/Apar.Seeder.runtimeconfig.json"
+          test -s "${{ runner.temp }}/apar-seeder/RescueChecklist.Web.dll"
+
+      - name: Upload one-time seeder artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apar-poc-seeder-linux-x64
+          path: ${{ runner.temp }}/apar-seeder/
+          retention-days: 3
