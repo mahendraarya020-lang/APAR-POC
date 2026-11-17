@@ -9,6 +9,8 @@ on:
       - 'main'
     paths-ignore:
       - '.github/workflows/generate-db-migration.yml'
+      - '.github/workflows/seed-apar-poc.yml'
+      - 'tools/Apar.Seeder/**'
   workflow_dispatch:
 
 jobs:
