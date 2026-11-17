@@ -27,7 +27,7 @@ jobs:
         run: dotnet tool install --global dotnet-ef --version '10.0.15'
 
       - name: Verify EF Core CLI
-        run: "$HOME/.dotnet/tools/dotnet-ef" --version
+        run: $HOME/.dotnet/tools/dotnet-ef --version
 
       - name: Restore application project
         run: dotnet restore src/RescueChecklist.Web/RescueChecklist.Web.csproj
