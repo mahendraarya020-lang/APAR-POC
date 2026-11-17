@@ -2,6 +2,11 @@ name: Generate APAR PostgreSQL Migration
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/generate-db-migration.yml'
 
 permissions:
   contents: read
