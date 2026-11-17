@@ -21,12 +21,18 @@ jobs:
       - name: Install EF Core CLI
         run: dotnet tool install --global dotnet-ef --version '10.0.15'
 
+      - name: Verify EF Core CLI
+        run: "$HOME/.dotnet/tools/dotnet-ef" --version
+
       - name: Restore application project
         run: dotnet restore src/RescueChecklist.Web/RescueChecklist.Web.csproj
 
       - name: Generate idempotent PostgreSQL migration SQL
+        env:
+          # Design-time only: generating SQL does not connect to this host.
+          ConnectionStrings__DefaultConnection: "Host=127.0.0.1;Port=5432;Database=design_time;Username=unused;Password=unused;SSL Mode=Require"
         run: |
-          dotnet ef migrations script \
+          "$HOME/.dotnet/tools/dotnet-ef" migrations script \
             --idempotent \
             --project src/RescueChecklist.Web/RescueChecklist.Web.csproj \
             --startup-project src/RescueChecklist.Web/RescueChecklist.Web.csproj \
