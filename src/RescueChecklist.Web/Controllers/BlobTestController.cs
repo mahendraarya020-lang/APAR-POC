@@ -60,7 +60,7 @@ public class BlobTestController(IConfiguration configuration, ILogger<BlobTestCo
         var files = new List<BlobTestFile>();
         try
         {
-            await foreach (var item in container.GetBlobsAsync(prefix: Prefix, cancellationToken: HttpContext.RequestAborted))
+            await foreach (var item in container.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: Prefix, cancellationToken: HttpContext.RequestAborted))
             {
                 var displayName = item.Name.Split('/').LastOrDefault() ?? "(file)";
                 files.Add(new BlobTestFile(item.Name, displayName, item.Properties.ContentLength ?? 0,
