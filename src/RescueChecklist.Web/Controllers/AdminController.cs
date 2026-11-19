@@ -1,3 +1,6 @@
+using Azure;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +11,7 @@ using RescueChecklist.Web.Models;
 namespace RescueChecklist.Web.Controllers;
 
 [Authorize(Roles = Roles.Admin)]
-public class AdminController(ApplicationDbContext db, UserManager<ApplicationUser> users) : Controller
+public class AdminController(ApplicationDbContext db, UserManager<ApplicationUser> users, IConfiguration config, ILogger<AdminController> logger) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -18,6 +21,35 @@ public class AdminController(ApplicationDbContext db, UserManager<ApplicationUse
         ViewBag.Users = await db.Users.Include(x => x.BuildingAccesses).ThenInclude(x => x.Building).OrderBy(x => x.UserName).ToListAsync();
         var userRoles = await db.UserRoles.Join(db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, r.Name }).ToListAsync();
         ViewBag.UserRoles = userRoles.GroupBy(x => x.UserId).ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Name)));
+        ViewBag.BlobFiles = new List<BlobTestFile>();
+        var serviceUri = config["BlobStorage:ServiceUri"];
+        var containerName = config["BlobStorage:ContainerName"];
+        ViewBag.BlobConfigured = Uri.TryCreate(serviceUri, UriKind.Absolute, out var blobEndpoint) &&
+            blobEndpoint.Scheme == Uri.UriSchemeHttps && !string.IsNullOrWhiteSpace(containerName);
+        if ((bool)ViewBag.BlobConfigured)
+        {
+            try
+            {
+                var container = new BlobServiceClient(blobEndpoint!, new DefaultAzureCredential())
+                    .GetBlobContainerClient(containerName!);
+                var files = new List<BlobTestFile>();
+                await foreach (var item in container.GetBlobsAsync(prefix: "poc-test/", cancellationToken: HttpContext.RequestAborted))
+                {
+                    var displayName = item.Name.Split('/').LastOrDefault() ?? "file";
+                    var previewable = new[] { ".pdf", ".png", ".jpg", ".jpeg", ".gif", ".webp" }
+                        .Contains(Path.GetExtension(displayName), StringComparer.OrdinalIgnoreCase);
+                    files.Add(new BlobTestFile(item.Name, displayName, item.Properties.ContentLength ?? 0,
+                        item.Properties.LastModified, previewable));
+                    if (files.Count >= 200) break;
+                }
+                ViewBag.BlobFiles = files.OrderByDescending(x => x.LastModified).ToList();
+            }
+            catch (RequestFailedException ex)
+            {
+                logger.LogWarning(ex, "Unable to list private APAR POC blobs");
+                ViewBag.BlobError = "Daftar file belum dapat dibaca. Periksa role Storage Blob Data Contributor dan jaringan.";
+            }
+        }
         return View();
     }
     [HttpPost]
