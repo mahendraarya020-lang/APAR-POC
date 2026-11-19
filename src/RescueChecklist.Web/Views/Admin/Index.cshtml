@@ -43,7 +43,7 @@
         {
             <p role="alert" class="alert alert-danger">@blobError</p>
         }
-        @{ var blobFiles = (List<RescueChecklist.Web.Controllers.BlobTestFile>)ViewBag.BlobFiles; }
+        var blobFiles = (List<RescueChecklist.Web.Controllers.BlobTestFile>)ViewBag.BlobFiles;
         <h3 class="mt-4">File yang sudah diupload</h3>
         @if (blobFiles.Count == 0)
         {
