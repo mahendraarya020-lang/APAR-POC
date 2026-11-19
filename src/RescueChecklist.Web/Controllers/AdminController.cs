@@ -33,7 +33,7 @@ public class AdminController(ApplicationDbContext db, UserManager<ApplicationUse
                 var container = new BlobServiceClient(blobEndpoint!, new DefaultAzureCredential())
                     .GetBlobContainerClient(containerName!);
                 var files = new List<BlobTestFile>();
-                await foreach (var item in container.GetBlobsAsync(prefix: "poc-test/", cancellationToken: HttpContext.RequestAborted))
+                await foreach (var item in container.GetBlobsAsync(traits: Azure.Storage.Blobs.Models.BlobTraits.None, states: Azure.Storage.Blobs.Models.BlobStates.None, prefix: "poc-test/", cancellationToken: HttpContext.RequestAborted))
                 {
                     var displayName = item.Name.Split('/').LastOrDefault() ?? "file";
                     var previewable = new[] { ".pdf", ".png", ".jpg", ".jpeg", ".gif", ".webp" }
