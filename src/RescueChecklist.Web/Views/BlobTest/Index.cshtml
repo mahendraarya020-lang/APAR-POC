@@ -1,0 +1,70 @@
+@model RescueChecklist.Web.Controllers.BlobTestPageModel
+@{
+    ViewData["Title"] = "Uji Azure Blob Storage";
+}
+<section class="mb-4">
+    <h1>Uji Azure Blob Storage</h1>
+    <p class="text-muted">Halaman uji khusus Admin. File disimpan privat di container <strong>@Model.ContainerName</strong>, prefix <code>poc-test/</code>.</p>
+    <p>Format: PDF, PNG, JPG, JPEG, GIF, WEBP, TXT, CSV, DOCX, XLSX. Maksimum 10 MB per file.</p>
+</section>
+
+@if (!Model.IsConfigured)
+{
+    <div class="alert alert-warning">
+        Konfigurasi belum lengkap. Tambahkan App settings
+        <code>BlobStorage__ServiceUri</code> dan <code>BlobStorage__ContainerName</code> di Azure App Service.
+    </div>
+}
+else
+{
+    <section class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5">Upload file untuk pengujian</h2>
+            <form asp-controller="BlobTest" asp-action="Upload" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label for="blob-file" class="form-label">Pilih file</label>
+                    <input id="blob-file" type="file" name="file" class="form-control"
+                           accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv,.docx,.xlsx"
+                           required />
+                </div>
+                <button type="submit" class="btn btn-primary">Upload ke Blob Storage</button>
+            </form>
+        </div>
+    </section>
+    <section>
+        <h2 class="h5">File yang sudah diupload (maksimum 200 terbaru)</h2>
+        @if (Model.Files.Count == 0)
+        {
+            <p>Belum ada file uji atau daftar belum dapat diambil.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th>Nama file</th><th>Ukuran</th><th>Diubah (UTC)</th><th>Aksi</th></tr></thead>
+                    <tbody>
+                    @foreach (var file in Model.Files)
+                    {
+                        <tr>
+                            <td>@file.DisplayName</td>
+                            <td>@(Math.Ceiling(file.SizeBytes / 1024.0)) KB</td>
+                            <td>@(file.LastModified?.UtcDateTime.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                            <td>
+                                @if (file.CanPreview)
+                                {
+                                    <a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener noreferrer"
+                                       asp-controller="BlobTest" asp-action="ViewFile" asp-route-name="@file.BlobName">Lihat</a>
+                                }
+                                <a class="btn btn-sm btn-outline-secondary"
+                                   asp-controller="BlobTest" asp-action="ViewFile" asp-route-name="@file.BlobName"
+                                   asp-route-download="true">Unduh</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}

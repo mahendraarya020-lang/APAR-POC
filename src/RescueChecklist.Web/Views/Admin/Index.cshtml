@@ -25,3 +25,51 @@
         </form>
     </div>
 </section>
+
+
+<section class="surface mt-4" id="blob-storage-test">
+    <h2>Upload file ke Azure Blob Storage</h2>
+    <p>Pengujian penyimpanan privat APAR: PDF, PNG, JPG, GIF, WEBP, TXT, CSV, DOCX dan XLSX (maksimal 10 MB).</p>
+    @if (ViewBag.BlobConfigured == true)
+    {
+        <form asp-controller="BlobTest" asp-action="Upload" method="post" enctype="multipart/form-data" class="stack-form">
+            @Html.AntiForgeryToken()
+            <label class="form-label" for="apar-blob-file">Pilih file</label>
+            <input class="form-control" type="file" id="apar-blob-file" name="file"
+                   accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv,.docx,.xlsx" required />
+            <button type="submit" class="btn btn-accent">Upload file</button>
+        </form>
+        @if (ViewBag.BlobError is string blobError)
+        {
+            <p role="alert" class="alert alert-danger">@blobError</p>
+        }
+        var blobFiles = (List<RescueChecklist.Web.Controllers.BlobTestFile>)ViewBag.BlobFiles;
+        <h3 class="mt-4">File yang sudah diupload</h3>
+        @if (blobFiles.Count == 0)
+        {
+            <p>Belum ada file atau daftar tidak dapat dibaca.</p>
+        }
+        else
+        {
+            <div class="admin-list">
+                @foreach (var file in blobFiles)
+                {
+                    <div>
+                        <span><strong>@file.DisplayName</strong> <small>@(Math.Ceiling(file.SizeBytes / 1024.0)) KB · @(file.LastModified?.UtcDateTime.ToString("yyyy-MM-dd HH:mm") ?? "-") UTC</small></span>
+                        <span>
+                            @if (file.CanPreview)
+                            {
+                                <a target="_blank" rel="noopener noreferrer" asp-controller="BlobTest" asp-action="ViewFile" asp-route-name="@file.BlobName">Lihat</a>
+                            }
+                            <a asp-controller="BlobTest" asp-action="ViewFile" asp-route-name="@file.BlobName" asp-route-download="true">Unduh</a>
+                        </span>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p class="alert alert-warning">Blob Storage belum dikonfigurasi. Periksa App settings BlobStorage__ServiceUri dan BlobStorage__ContainerName.</p>
+    }
+</section>

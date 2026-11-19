@@ -4,6 +4,9 @@
 name: Build and deploy ASP.Net Core app to Azure Web App - app-apar-dev
 
 on:
+  pull_request:
+    branches:
+      - 'main'
   push:
     branches:
       - 'main'
@@ -40,6 +43,7 @@ jobs:
           path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: build
     
