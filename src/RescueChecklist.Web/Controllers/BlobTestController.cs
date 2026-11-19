@@ -83,7 +83,7 @@ public class BlobTestController(IConfiguration configuration, ILogger<BlobTestCo
         if (file is null || file.Length == 0 || file.Length > MaxFileBytes)
         {
             TempData["Error"] = "Pilih file dengan ukuran 1 byte sampai 10 MB.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Admin");
         }
 
         var originalName = Path.GetFileName(file.FileName.Replace('\\', '/'));
@@ -91,14 +91,14 @@ public class BlobTestController(IConfiguration configuration, ILogger<BlobTestCo
         if (!AllowedTypes.TryGetValue(extension, out var contentType))
         {
             TempData["Error"] = "Format yang diizinkan: PDF, PNG, JPG, GIF, WEBP, TXT, CSV, DOCX, XLSX.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Admin");
         }
 
         var container = Container();
         if (container is null)
         {
             TempData["Error"] = "Konfigurasi BlobStorage__ServiceUri dan BlobStorage__ContainerName belum lengkap.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Admin");
         }
 
         var safeName = Regex.Replace(originalName, "[^A-Za-z0-9._-]", "_");
@@ -122,7 +122,7 @@ public class BlobTestController(IConfiguration configuration, ILogger<BlobTestCo
             TempData["Error"] = "Upload gagal. Periksa izin Managed Identity, jaringan, dan konfigurasi container.";
         }
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index", "Admin");
     }
 
     [HttpGet]
